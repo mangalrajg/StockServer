@@ -32,7 +32,7 @@ class TransactionServiceTest {
                 .amount(1D)
                 .price(1D)
                 .validationStatus(ValidationStatus.PENDING)
-                .transactionType(TransactionType.PURCHASE)
+                .transactionType(TransactionType.BUY)
                 .build()));
         Assertions.assertNotNull(savedTransactions);
         Assertions.assertEquals(1, savedTransactions.size());
