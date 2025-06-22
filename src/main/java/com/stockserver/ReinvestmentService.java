@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,15 +51,15 @@ public class ReinvestmentService {
 
         var reinvestTransactions = new HashMap<LocalDate, List<TransactionEntity>>();
         for (var h : holdingDates) {
-            var filteredTrans = reinvestTransactions.entrySet()
+            var transTillDate = reinvestTransactions.entrySet()
                     .stream()
                     .filter(kv -> kv.getKey().toEpochDay() <= h.toEpochDay())
                     .toList();
 
-            var qty = filteredTrans.stream()
+            var qtyTillDate = transTillDate.stream()
                     .mapToDouble(kv -> kv.getValue().stream().mapToDouble(TransactionEntity::getQuantity).sum())
                     .sum();
-            log.info("for date {} qty = {}", h, qty);
+            log.info("till date {} qty = {}", h, qtyTillDate);
 
             if (divMap.containsKey(h)) {
                 var div = divMap.get(h);
@@ -71,7 +72,7 @@ public class ReinvestmentService {
 
                 // Note: Div transaction will be created for payment date using quantity of exDiv date.
                 var quote = quoteMap.get(div.getPaymentDate());
-                var divTransactions = createDivTransactions(ticker, div, quote, qty);
+                var divTransactions = createDivTransactions(ticker, div, quote, qtyTillDate);
                 reinvestTransactions.computeIfAbsent(div.getPaymentDate(), k -> new ArrayList<>())
                         .addAll(divTransactions);
             }
@@ -80,53 +81,55 @@ public class ReinvestmentService {
                     .addAll(tList);
 
         }
-        return getTransactions(reinvestTransactions);
+        return reinvestTransactions.values().stream().flatMap(Collection::stream).toList();
     }
 
-    private List<TransactionEntity> getTransactions(HashMap<LocalDate, List<TransactionEntity>> transactionMap) {
-        return transactionMap.values()
-                .stream()
-                .flatMap(this::removeDupes)
-                .toList();
-    }
-
-    private Stream<TransactionEntity> removeDupes(List<TransactionEntity> tList) {
-        var groups = tList.stream().collect(Collectors.groupingBy(TransactionEntity::getTransactionType));
-        return groups.entrySet()
-                .stream()
-                .flatMap(entry ->
-                        switch (entry.getKey()) {
-                            case PURCHASE -> entry.getValue().stream();
-                            case REINVESTMENT, DIVIDEND_CASH -> Stream.of(entry.getValue().stream()
-                                    .filter(x -> x.getValidationStatus().equals(ValidationStatus.VALIDATED))
-                                    .findFirst()
-                                    .orElse(entry.getValue().get(0)));
-                        });
-    }
+//    private List<TransactionEntity> getTransactions(HashMap<LocalDate, List<TransactionEntity>> transactionMap) {
+//        return transactionMap.values()
+//                .stream()
+//                .flatMap(this::removeDupes)
+//                .toList();
+//    }
+//
+//    private Stream<TransactionEntity> removeDupes(List<TransactionEntity> tList) {
+//        var groups = tList.stream().collect(Collectors.groupingBy(TransactionEntity::getTransactionType));
+//        return groups.entrySet()
+//                .stream()
+//                .flatMap(entry ->
+//                        switch (entry.getKey()) {
+//                            case BUY, SELL -> entry.getValue().stream();
+//                            case REINVESTMENT, DIVIDEND_CASH -> Stream.of(entry.getValue().stream()
+//                                    .filter(x -> x.getValidationStatus().equals(ValidationStatus.VALIDATED))
+//                                    .findFirst()
+//                                    .orElse(entry.getValue().get(0)));
+//                        });
+//    }
 
     private List<TransactionEntity> createDivTransactions(String ticker,
                                                           DividendEntity d,
                                                           QuoteEntity q,
                                                           double qty) {
         var divAmount = d.getAmount() * qty;
-        var divTransaction = TransactionEntity.builder()
+        var reinvestmentTransaction = TransactionEntity.builder()
                 .transactionDate(d.getPaymentDate())
                 .ticker(ticker)
                 .amount(divAmount)
                 .price(q.getOpen())
+                .quantity(divAmount / q.getOpen())
                 .transactionType(TransactionType.REINVESTMENT)
                 .validationStatus(ValidationStatus.PENDING)
                 .build();
-
         var cashTransactions = TransactionEntity.builder()
                 .transactionDate(d.getPaymentDate())
                 .ticker(ticker)
                 .amount(divAmount)
+                .price(0D)
+                .quantity(0D)
                 .transactionType(TransactionType.DIVIDEND_CASH)
                 .validationStatus(ValidationStatus.PENDING)
                 .build();
 
-        return List.of(divTransaction, cashTransactions);
+        return List.of(reinvestmentTransaction, cashTransactions);
     }
 
     public List<TransactionEntity> generateReinvestmentTransactions(StockEntity stock) {
@@ -135,4 +138,5 @@ public class ReinvestmentService {
         var dividends = dividendService.getDividends(stock.getTicker(), stock.getPositionOpenDate());
         return getReinvestmentTransactions(stock.getTicker(), quotes, transactions, dividends);
     }
+
 }
