@@ -23,13 +23,15 @@ create table t_quote (
     );
 
 create table t_transaction (
-    ticker varchar(255) not null,
-    price float not null,
-    transaction_date date not null,
-    amount float not null,
-    transaction_type varchar(255),
-    validation_status varchar(255),
-    primary key (transaction_date, ticker)
+    id integer,
+    amount float,
+    price float,
+    quantity float,
+    ticker varchar(255),
+    transaction_date date,
+    transaction_type varchar(255) check (transaction_type in ('BUY','SELL','STK_SPLT','CIL','EXCHANGE','REINVESTMENT','DIVIDEND_CASH')),
+    validation_status varchar(255) check (validation_status in ('PENDING','VALIDATED')),
+    primary key (id)
     );
 
 create table t_dividend (
