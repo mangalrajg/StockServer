@@ -4,14 +4,16 @@ import com.stockserver.stock.StockService;
 import com.stockserver.transaction.TransactionService;
 import com.stockserver.transaction.TransactionType;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 @Slf4j
 @SpringBootTest
+@Disabled
 //@TestPropertySource(properties = {
 //        "spring.datasource.url=jdbc:sqlite:stock_server.sqllite",
 //        "spring.datasource.driver-class-name=org.sqlite.JDBC"

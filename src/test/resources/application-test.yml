@@ -4,6 +4,7 @@ spring:
   flyway:
     enable: true
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
     hibernate:
       ddl-auto: update

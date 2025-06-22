@@ -48,6 +48,7 @@ class ReinvestmentServiceTest {
                 .transactionDate(LocalDate.of(2022, 1, 15))
                 .price(100D)
                 .amount(1000D)
+                .quantity(10D)
                 .transactionType(TransactionType.BUY)
                 .validationStatus(ValidationStatus.VALIDATED)
                 .build();
@@ -84,6 +85,7 @@ class ReinvestmentServiceTest {
                 .transactionDate(LocalDate.of(2022, 1, 15))
                 .price(100D)
                 .amount(1000D)
+                .quantity(10D)
                 .transactionType(TransactionType.BUY)
                 .validationStatus(ValidationStatus.VALIDATED)
                 .build();
@@ -91,6 +93,8 @@ class ReinvestmentServiceTest {
                 .ticker(ticker)
                 .transactionDate(LocalDate.of(2023, 1, 1))
                 .amount(40D)
+                .quantity(0D)
+                .price(0D)
                 .transactionType(TransactionType.DIVIDEND_CASH)
                 .validationStatus(ValidationStatus.VALIDATED)
                 .build();
@@ -99,6 +103,7 @@ class ReinvestmentServiceTest {
                 .transactionDate(LocalDate.of(2023, 1, 1))
                 .price(400D)
                 .amount(40D)
+                .quantity(.10D)
                 .transactionType(TransactionType.REINVESTMENT)
                 .validationStatus(ValidationStatus.VALIDATED)
                 .build();

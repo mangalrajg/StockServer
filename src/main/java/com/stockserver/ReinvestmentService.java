@@ -110,24 +110,26 @@ public class ReinvestmentService {
                                                           QuoteEntity q,
                                                           double qty) {
         var divAmount = d.getAmount() * qty;
-        var divTransaction = TransactionEntity.builder()
+        var reinvestmentTransaction = TransactionEntity.builder()
                 .transactionDate(d.getPaymentDate())
                 .ticker(ticker)
                 .amount(divAmount)
                 .price(q.getOpen())
+                .quantity(divAmount / q.getOpen())
                 .transactionType(TransactionType.REINVESTMENT)
                 .validationStatus(ValidationStatus.PENDING)
                 .build();
-
         var cashTransactions = TransactionEntity.builder()
                 .transactionDate(d.getPaymentDate())
                 .ticker(ticker)
                 .amount(divAmount)
+                .price(0D)
+                .quantity(0D)
                 .transactionType(TransactionType.DIVIDEND_CASH)
                 .validationStatus(ValidationStatus.PENDING)
                 .build();
 
-        return List.of(divTransaction, cashTransactions);
+        return List.of(reinvestmentTransaction, cashTransactions);
     }
 
     public List<TransactionEntity> generateReinvestmentTransactions(StockEntity stock) {

@@ -23,7 +23,7 @@ create table t_quote (
     );
 
 create table t_transaction (
-    id integer,
+    id BIGINT AUTO_INCREMENT,
     amount float,
     price float,
     quantity float,
