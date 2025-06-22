@@ -16,6 +16,10 @@ public class TransactionService {
         return repo.findAllByTickerOrderByTransactionDate(ticker);
     }
 
+    public List<TransactionEntity> getTransactions() {
+        return repo.findAll();
+    }
+
     public List<TransactionEntity> saveTransactions(List<TransactionEntity> transactions) {
         return repo.saveAll(transactions);
     }

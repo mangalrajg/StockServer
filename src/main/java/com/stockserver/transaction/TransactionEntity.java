@@ -14,21 +14,56 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@IdClass(TransactionId.class)
 public class TransactionEntity {
     @Id
-    private String ticker;
-    @Id
-    private LocalDate transactionDate;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private double amount;
-    private double price;
+    private String ticker;
+    private LocalDate transactionDate;
+    private Double amount;
+    private Double price;
+    private Double quantity;
+
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
     @Enumerated(EnumType.STRING)
     private ValidationStatus validationStatus;
 
-    public double getQuantity() {
-        return transactionType == TransactionType.DIVIDEND_CASH ? 0 : amount / price;
+    public static class TransactionEntityBuilder {
+        public boolean hasPrice() {
+            return Math.abs(this.price) > 0.0001D;
+        }
+
+        public boolean hasQuantity() {
+            return Math.abs(this.quantity) > 0.0001D;
+        }
+
+        public boolean hasAmount() {
+            return Math.abs(this.amount) > 0.0001D;
+        }
+
+        public TransactionType getTransactionType() {
+            return transactionType;
+        }
+    }
+
+    @PrePersist
+    public void setMissingValues() {
+        if (transactionType == TransactionType.DIVIDEND_CASH) {
+            this.amount = 0D;
+            this.price = 0D;
+            this.quantity = 0D;
+        } else {
+            if (this.amount == null) {
+                this.amount = this.quantity * this.price;
+            }
+            if (this.price == null) {
+                this.price = this.amount / this.quantity;
+            }
+            if (this.quantity == null) {
+                this.quantity = this.amount / this.price;
+            }
+        }
     }
 }

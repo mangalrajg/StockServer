@@ -54,9 +54,9 @@ class LoadQuotesTest {
         var transaction = TransactionEntity.builder()
                 .ticker(ticker)
                 .transactionDate(LocalDate.of(2022, 1, 15))
-                .price(100)
-                .amount(2000)
-                .transactionType(TransactionType.PURCHASE)
+                .price(100D)
+                .amount(2000D)
+                .transactionType(TransactionType.BUY)
                 .build();
         if (!savedTransactions.contains(transaction))
             transactionService.saveTransactions(List.of(transaction));
